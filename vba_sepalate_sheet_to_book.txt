@@ -1,0 +1,58 @@
+'＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+'特定のブックをシート毎にブック分けする
+'＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+Sub vba_sepalate_sheet_to_book()
+    'シート削除の確認ダイアログを表示しない
+    Application.DisplayAlerts = False
+
+    Dim wbFromName As String       '作業対象のブック名
+    Dim path As String             'ブック出力先のパス
+    Dim wbFrom As Workbook         '作業対象のブックオブジェクト
+    Dim wbTo As Workbook           'コピー先のブックオブジェクト
+    Dim sheetLength As Integer     '作業対象ブックのシート数
+    Dim fileNameStr As String      '新規作成するファイル名の共通部分
+    Dim fileNameInt As Integer     '新規作成するファイル名の末尾
+    Dim counter As Integer         '繰り返し文で使用するカウンタ
+    
+    wbFromName = "" '作業対象のブック名を初期化（拡張子有り）
+    fileNameStr = "" '元ファイル名を初期化（拡張子無し）
+    path = "" 'ブック出力先のパスを初期化
+    
+    Set wbFrom = Workbooks.Open(wbFromName) '作業対象のブックを開く
+    sheetLength = wbFrom.Worksheets.Count '作業対象のブックのシート数を代入
+    
+    For counter = 1 To sheetLength
+        'コピー元シート名を代入
+        fileNameInt = wbFrom.Worksheets(counter).Name
+
+        'コピー先ブック名の存在チェック
+        If Dir(path & fileNameStr & "_" & fileNameInt) <> "" Then
+            GoTo Label1 'コピー先ブック名が既に存在していれば、ラベル位置へ移動
+        End If
+
+        '＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+        'コピー先ブックの生成
+        '＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+
+        '新規ブック作成処理
+        Set wbTo = Workbooks.Add
+
+        '＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+        'シートをコピー先のブックにコピー
+        '＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+        
+        'コピー先のブックの先頭にコピー
+        wbFrom.Worksheets(counter).Copy Before:=wbTo.Worksheets(1)
+        
+        'コピー先の空のシートを削除
+        wbTo.Worksheets(2).Delete
+
+        'ブックを新規保存して閉じる
+        wbTo.SaveAs path & fileNameStr & "_" & fileNameInt & ".xlsx"
+        wbTo.Close
+
+Label1: 'ラベル位置
+    Next
+
+    wbFrom.Close '開いたブックを閉じる
+End Sub
